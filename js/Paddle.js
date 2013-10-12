@@ -1,3 +1,5 @@
+"use strict";
+
 // A generic constructor which accepts an arbitrary descriptor object
 function Paddle(descr) {
     for (var property in descr) {
@@ -14,11 +16,25 @@ Paddle.prototype.halfHeight = 10;
 
 Paddle.prototype.speed = 10;
 
+Paddle.prototype.hit = function () {
+    g_sounds.playHit2();
+}
+
 Paddle.prototype.update = function (du) {
+    var nextX = this.cx;
     if (g_keys[this.GO_LEFT]) {
-        this.cx -= this.speed * du;
-    } else if (g_keys[this.GO_RIGHT]) {
-        this.cx += this.speed * du;
+        nextX -= this.speed * du;
+    }
+    if (g_keys[this.GO_RIGHT]) {
+        nextX += this.speed * du;
+    }
+    if (nextX<this.halfWidth) {
+        this.cx = this.halfWidth;
+    } else
+    if (g_canvas.width-this.halfWidth<nextX) {
+        this.cx = g_canvas.width-this.halfWidth;
+    } else {
+        this.cx = nextX;
     }
 };
 

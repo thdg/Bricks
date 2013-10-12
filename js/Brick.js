@@ -1,3 +1,5 @@
+"use strict";
+
 // ==========
 // BRICK STUFF
 // ==========
@@ -13,10 +15,9 @@ function Brick(descr) {
 // Default proporties
 Brick.prototype.dying = false;
 Brick.prototype.lives = 1;
-Brick.prototype.lastsLives = 1; // lives when last updated
-
-Brick.prototype.halfHeight = 20
-Brick.prototype.halfWidth = 50
+Brick.prototype.offsetX = 0;
+Brick.prototype.offsetY = 0;
+Brick.prototype.time = 0;
 
 Brick.prototype.setColor = function(lives) {
     switch (this.lives) {
@@ -38,16 +39,39 @@ Brick.prototype.setColor = function(lives) {
     }
 }
 
+Brick.prototype.hit = function () {
+    g_sounds.playHit();
+    this.shaking = true;
+    this.time = 20;
+    this.lives -= 1;
+    particleChunk(this.cx, this.cy, 20, this.color );
+}
+
 Brick.prototype.update = function (du) {
+    
     if (this.lives<=0) {
         this.dying = true;
-    } else
-    if (this.lives<this.lastsLives) {
+        if (Math.random()<0.1)
+            g_balls.push(new Ball({ cx: this.cx, cy: this.cy }));
+    } else {
         this.setColor(this.lives);
+    }
+    
+    if (this.shaking) {
+        this.offsetX = Math.random()*10-5;
+        this.offsetY = Math.random()*10-5;
+        this.time -= du;
+        if (this.time<0) {
+            this.shaking = false;
+            this.offsetX = 0;
+            this.offsetY = 0;
+        }
     }
 };
 
 Brick.prototype.render = function (ctx) {
+    ctx.save();
+    ctx.translate(this.offsetX, this.offsetY);
     fillBox(
         ctx,
         this.cx - this.halfWidth,
@@ -56,4 +80,5 @@ Brick.prototype.render = function (ctx) {
         this.halfHeight * 2,
         this.color
     );
+    ctx.restore();
 };
